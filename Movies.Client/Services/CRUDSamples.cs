@@ -17,11 +17,11 @@ public class CRUDSamples : IIntegrationService
     }
     public async Task RunAsync()
     {
-        //await GetResourceAsync();
-        //await GetResourceThroughHttpRequestMessageAsync();
+        await GetResourceAsync();
+        await GetResourceThroughHttpRequestMessageAsync();
         //await CreateResourceAsync();
         //await UpdateResourceAsync();
-        await DeleteReseourceAsync();
+        //await DeleteReseourceAsync();
     }
     public async Task GetResourceAsync()
     {

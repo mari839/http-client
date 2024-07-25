@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Movies.API.DbContexts;
 using Movies.API.Services;
+using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,11 +13,11 @@ builder.Services.AddControllers(options =>
     options.ReturnHttpNotAcceptable = true;
 })
 // Override System.Text.Json with Json.NET
-//.AddNewtonsoftJson(setupAction =>
+//.AddNewtonsoftJson(setupaction =>
 //{
-//    setupAction.SerializerSettings.ContractResolver =
+//    setupaction.SerializerSettings.ContractResolver =
 //       new CamelCasePropertyNamesContractResolver();
-//});
+//})
 .AddXmlSerializerFormatters();
 
 // add support for (de)compressing requests/responses (eg gzip)
