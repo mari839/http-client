@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Movies.Client;
+using Movies.Client.Handlers;
 using Movies.Client.Helpers;
-using Movies.Client.Services; 
+using Movies.Client.Services;
+using Polly;
+using System.Reflection.Metadata.Ecma335;
 
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
@@ -12,11 +16,48 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton<JsonSerializerOptionsWrapper>();
 
+        //register service as transient because it's a lightweight service
+        services.AddTransient(fact =>
+        {
+            return new RetryPolicyDelegatingHandler(2);
+        });
+        //we add our custom retrying policy RetryPolicyDelegatingHandler
+        services.AddHttpClient("MoviesAPIClientWithCustomerHandler", configureClient =>
+        {
+            configureClient.BaseAddress = new Uri("http://localhost:5001");
+            configureClient.Timeout = new TimeSpan(0, 0, 30);
+        }).AddHttpMessageHandler<RetryPolicyDelegatingHandler>() //generic AddHttpMessageHandler method, beacuse we already registered service as transient
+        //.AddHttpMessageHandler(()=>
+        //{
+        //    return new RetryPolicyDelegatingHandler(2);
+        //}
+        //)
+        .ConfigurePrimaryHttpMessageHandler(() => //we can chain multiple handlers but PrimatyHttpMessageHandler should always be the last one in the pipeline
+        {
+            var handler = new SocketsHttpHandler();
+            handler.AutomaticDecompression = System.Net.DecompressionMethods.GZip;
+            //handler.AllowAutoRedirect = false; // this means that if url changes in API, for example api/films changes to api/movies it redirects to correct url, by default it's true (As an API developers you can make it known by returning redirection based response like 302 redirect)
+            return handler;
+        });
+
+
+
         services.AddHttpClient("MoviesAPIClient", configureClient =>
         {
             configureClient.BaseAddress = new Uri("http://localhost:5001");
             configureClient.Timeout = new TimeSpan(0, 0, 30);
+        }).AddPolicyHandler(Policy.HandleResult<HttpResponseMessage>// polly helps us to send request again if it fails.
+        (response => !response.IsSuccessStatusCode).RetryAsync(5))
+        
+        .ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            var handler = new SocketsHttpHandler();
+            handler.AutomaticDecompression = System.Net.DecompressionMethods.GZip;
+            //handler.AllowAutoRedirect = false; // this means that if url changes in API, for example api/films changes to api/movies it redirects to correct url, by default it's true (As an API developers you can make it known by returning redirection based response like 302 redirect)
+            return handler;
         });
+
+        services.AddHttpClient<MoviesAPIClient>();
 
         // For the cancellation samples
         // services.AddScoped<IIntegrationService, CancellationSamples>();
@@ -31,7 +72,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
         // services.AddScoped<IIntegrationService, CompressionSamples>();
 
         // For the custom message handler samples
-        // services.AddScoped<IIntegrationService, CustomMessageHandlersSamples>();
+         services.AddScoped<IIntegrationService, CustomMessageHandlersSamples>();
 
         // For the faults and errors samples
         // services.AddScoped<IIntegrationService, FaultsAndErrorsSamples>();
@@ -43,10 +84,10 @@ using IHost host = Host.CreateDefaultBuilder(args)
         // services.AddScoped<IIntegrationService, LocalStreamsSamples>();
 
         // For the partial update samples
-        services.AddScoped<IIntegrationService, PartialUpdateSamples>();
+        //services.AddScoped<IIntegrationService, PartialUpdateSamples>();
 
         // For the remote streaming samples
-        // services.AddScoped<IIntegrationService, RemoteStreamingSamples>();
+        //services.AddScoped<IIntegrationService, RemoteStreamingSamples>();
 
     }).Build();
 

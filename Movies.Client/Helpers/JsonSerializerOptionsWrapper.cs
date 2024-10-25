@@ -9,6 +9,8 @@ namespace Movies.Client.Helpers
         public JsonSerializerOptionsWrapper()
         {
             Options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            //the streaming can be visible and items will be dispalyed one by one
+            Options.DefaultBufferSize = 10;
         }
     }
 }

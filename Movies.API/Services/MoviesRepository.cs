@@ -26,7 +26,7 @@ public class MoviesRepository : IMoviesRepository
             .Include(m => m.Director).ToListAsync();
     }
 
-    public IAsyncEnumerable<Movie> GetMoviesAsAsyncEnumerable()
+    public IAsyncEnumerable<Movie> GetMoviesAsAsyncEnumerable() //supports streaming, it enables for consumer to iterate over a set of data one by one asynchronously
     {
         return _context.Movies.AsAsyncEnumerable<Movie>();
     }

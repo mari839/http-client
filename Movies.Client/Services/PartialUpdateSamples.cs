@@ -19,27 +19,27 @@ public class PartialUpdateSamples : IIntegrationService //we use Newtonsoft.Json
         //await PatchResourceShortcutAsync();
     }
 
-    //public async Task PatchResourceAsync()
-    //{
-    //    var httpClient = _httpClientFactory.CreateClient("MoviesAPIClient");
+    public async Task PatchResourceAsync()
+    {
+        var httpClient = _httpClientFactory.CreateClient("MoviesAPIClient");
 
-    //    var patchDoc = new JsonPatchDocument<MovieForUpdate>();
-    //    patchDoc.Replace(m => m.Title, "Updated Title");
-    //    patchDoc.Remove(m => m.Description);
+        var patchDoc = new JsonPatchDocument<MovieForUpdate>();
+        patchDoc.Replace(m => m.Title, "Updated Title");
+        patchDoc.Remove(m => m.Description);
 
-    //    var serializedChangeSet = JsonConvert.SerializeObject(patchDoc);
-    //    var request = new HttpRequestMessage(HttpMethod.Patch, "api/movies/bb6a100a-053f-4bf8-b271-60ce3aae6eb5");
-    //    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        var serializedChangeSet = JsonConvert.SerializeObject(patchDoc);
+        var request = new HttpRequestMessage(HttpMethod.Patch, "api/movies/bb6a100a-053f-4bf8-b271-60ce3aae6eb5");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-    //    request.Content = new StringContent(serializedChangeSet);
-    //    request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json-patch+json");
+        request.Content = new StringContent(serializedChangeSet);
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json-patch+json");
 
-    //    var response = await httpClient.SendAsync(request);
-    //    response.EnsureSuccessStatusCode();
+        var response = await httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
 
-    //    var content = await response.Content.ReadAsStringAsync();   
-    //    var updatedMovie = JsonConvert.DeserializeObject<Movie>(content);
-    //}
+        var content = await response.Content.ReadAsStringAsync();
+        var updatedMovie = JsonConvert.DeserializeObject<Movie>(content);
+    }
 
     public async Task PatchResourceShortcutAsync()
     {
